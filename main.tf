@@ -57,26 +57,10 @@ resource "aws_instance" "tf-ec2" {
   instance_type = var.instance-type
   key_name = "ertugrul"
   vpc_security_group_ids = [ aws_security_group.allow_ssh.id ]
+  user_data = filebase64("user-data.sh")
       tags = {
       Name = "Web Server of Bookstore"
   }
-
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install git -y
-              amazon-linux-extras install docker -y
-              systemctl start docker
-              systemctl enable docker
-              usermod -a -G docker ec2-user
-              newgrp
-              # install docker-compose
-              curl -L "https://github.com/docker/compose/releases/download/v2.12.2/docker-compose-$(uname -s)-$(uname -m)" \ 
-              -o /usr/local/bin/docker-compose
-              chmod +x /usr/local/bin/docker-compose
-              cd /home/ec2-user && git clone https://github.com/eakkaya64/bookstore-api.git
-              cd bookstore-api && docker-compose up
-	            EOF
 }  
 output "myec2-public-ip" {
   value = aws_instance.tf-ec2.public_ip
